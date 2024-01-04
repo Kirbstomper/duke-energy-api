@@ -3,68 +3,18 @@ package main
 import (
 	"encoding/xml"
 	"log"
+	"os"
 )
 
 func main() {
 
 	//Lets read in our XML
 
-	blob := `
-	<espi:IntervalBlock>
+	reportFile, err := os.ReadFile("report.xml")
 
-	<espi:interval>
-	<espi:servicePointId>6002421765</espi:servicePointId>
-	<espi:serviceType>ELECTRIC</espi:serviceType>
-	<espi:unitOfMeasure>kWH</espi:unitOfMeasure>
-	<espi:secondsPerInterval>1800</espi:secondsPerInterval>
-	<espi:duration>65840400</espi:duration>
-	<espi:start>1659243600</espi:start>
-	</espi:interval>
-	<espi:IntervalReading>
-	<espi:timePeriod>
-		<espi:start>1659243600</espi:start>
-	</espi:timePeriod>
-	<espi:readingQuality>ACTUAL</espi:readingQuality>
-	<espi:value>0.12</espi:value>
-</espi:IntervalReading>
-<espi:IntervalReading>
-	<espi:timePeriod>
-		<espi:start>1659245400</espi:start>
-	</espi:timePeriod>
-	<espi:readingQuality>ACTUAL</espi:readingQuality>
-	<espi:value>0.13</espi:value>
-</espi:IntervalReading>
-<espi:IntervalReading>
-	<espi:timePeriod>
-		<espi:start>1659247200</espi:start>
-	</espi:timePeriod>
-	<espi:readingQuality>ACTUAL</espi:readingQuality>
-	<espi:value>0.1</espi:value>
-</espi:IntervalReading>
-<espi:IntervalReading>
-	<espi:timePeriod>
-		<espi:start>1659249000</espi:start>
-	</espi:timePeriod>
-	<espi:readingQuality>ACTUAL</espi:readingQuality>
-	<espi:value>0.28</espi:value>
-</espi:IntervalReading>
-<espi:IntervalReading>
-	<espi:timePeriod>
-		<espi:start>1659250800</espi:start>
-	</espi:timePeriod>
-	<espi:readingQuality>ACTUAL</espi:readingQuality>
-	<espi:value>0.39</espi:value>
-</espi:IntervalReading>
-<espi:IntervalReading>
-	<espi:timePeriod>
-		<espi:start>1659252600</espi:start>
-	</espi:timePeriod>
-	<espi:readingQuality>ACTUAL</espi:readingQuality>
-	<espi:value>0.1</espi:value>
-</espi:IntervalReading>
-</espi:IntervalBlock>
-
-`
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	type interval struct {
 		ServicePointID     string `xml:"servicePointId"`
@@ -81,13 +31,14 @@ func main() {
 		Start          string `xml:"timePeriod>start"`
 	}
 	var intervalBlock struct {
-		Interval interval          `xml:"interval"`
-		Readings []IntervalReading `xml:"IntervalReading"`
+		Interval interval          `xml:"content>IntervalBlock>interval"`
+		Readings []IntervalReading `xml:"content>IntervalBlock>IntervalReading"`
 	}
-	if err := xml.Unmarshal([]byte(blob), &intervalBlock); err != nil {
+	if err := xml.Unmarshal(reportFile, &intervalBlock); err != nil {
 		log.Fatal(err)
 	}
 
+	//Print out the results
 	println("Service Point ID: " + intervalBlock.Interval.ServicePointID)
 	println("Service Type: " + intervalBlock.Interval.ServiceType)
 	println("Unit of Measure: " + intervalBlock.Interval.UnitOfMeasure)
